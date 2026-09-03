@@ -1,0 +1,60 @@
+name: internwatch
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Seed mode: mark everything currently posted as seen, send nothing. Run this ONCE first."
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: internwatch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # State lives on an orphan branch called `state` holding exactly one file
+      # and exactly one commit. Force-pushing a fresh orphan each run means the
+      # repo never accumulates 3000 commits of churn.
+      - name: Restore state
+        run: |
+          git fetch origin state:state --depth=1 2>/dev/null || echo "no state branch yet (first run)"
+          git show state:seen.json > seen.json 2>/dev/null || echo '{}' > seen.json
+          python -c "import json;print('restored',len(json.load(open('seen.json')).get('seen',{})),'known postings')"
+
+      - name: Poll
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          if [ "${{ inputs.seed }}" = "true" ]; then
+            python internwatch.py --seed
+          else
+            python internwatch.py --once
+          fi
+
+      - name: Save state
+        run: |
+          git config user.name  "internwatch"
+          git config user.email "internwatch@users.noreply.github.com"
+          git checkout --orphan state-tmp
+          git rm -rf --cached . > /dev/null 2>&1 || true
+          git add -f seen.json
+          git commit -q -m "state $(date -u +%FT%TZ)"
+          git push -f -q origin HEAD:state

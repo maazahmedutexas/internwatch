@@ -1,0 +1,744 @@
+# =============================================================================
+# internwatch config
+# Tuned for: ECE @ UT Austin, embedded SWE lean, currently Tesla co-op @ $50/hr
+# =============================================================================
+
+poll_seconds: 600        # 10 min. Under ~5 min you risk rate limits, and no ATS
+                         # posts fast enough for it to matter.
+min_score: 6             # raise to 8 for signal-only, drop to 4 for firehose
+state_retention_days: 400  # forget a posting after this long so reposts re-alert
+
+# -----------------------------------------------------------------------------
+# NOTIFICATIONS
+# -----------------------------------------------------------------------------
+notify:
+  channels: [ntfy]       # options: ntfy, twilio, telegram, discord. Can list several.
+  batch_size: 1          # 1 = one message per role (best for urgency).
+                         # 3-5 = fewer messages, cheaper on Twilio.
+
+  ntfy:                  # FREE. Install the "ntfy" app, subscribe to your topic.
+    server: https://ntfy.sh
+    topic: "maaz-iw-746de7f46018"
+    # ^ generated for you. The topic IS the password: anyone who guesses it reads
+    #   your alerts. On GitHub Actions this is overridden by the NTFY_TOPIC secret,
+    #   so you can leave this blank if the repo is public.
+
+  twilio:                # REAL SMS to your phone. ~$1.15/mo + $0.0079/msg.
+    to_number: "+13466664713"
+    from_number: "+1XXXXXXXXXX"   # the number you buy in the Twilio console
+    # Do NOT put creds here. Export them instead:
+    #   export TWILIO_SID=ACxxxxx
+    #   export TWILIO_TOKEN=xxxxx
+
+  telegram:
+    bot_token: ""        # or env TELEGRAM_TOKEN
+    chat_id: ""          # or env TELEGRAM_CHAT_ID
+
+  discord:
+    webhook_url: ""      # or env DISCORD_WEBHOOK
+
+# -----------------------------------------------------------------------------
+# PAY
+# -----------------------------------------------------------------------------
+pay:
+  floor_hourly: 45           # your Tesla base is 50; 45 leaves room for roles
+                             # that pay less base but have far better cost of living
+  great_hourly: 58           # anything at or above this gets a big score boost
+
+  notify_if_unknown: true    # most postings outside CA/WA/NY/CO hide pay.
+                             # false here would silently drop half the market.
+
+  notify_if_below_floor: true   # CHANGED. You named Micron, TSMC and TI, all of
+                                # which sit below 45. Rather than silently dropping
+                                # them, they come through tagged [LOW PAY] with a
+                                # score penalty so they sort to the bottom.
+                                # Flip to false if you truly never want to see them.
+
+# Fallback estimates (USD/hr) used when a posting doesn't publish a range.
+# These are rough 2026 market numbers. Edit freely as you hear real offers.
+known_pay_hourly:
+  Meta: 55
+  Amazon: 54
+  Google: 52
+  NVIDIA: 52
+  Apple: 50
+  Microsoft: 50
+  Tesla: 50
+  Databricks: 60
+  Stripe: 58
+  Anduril: 50
+  Snap: 50
+  Qualcomm: 45
+  Marvell: 45
+  Broadcom: 45
+  AMD: 42
+  Texas Instruments: 42
+  Intel: 42
+  Analog Devices: 42
+  Applied Materials: 40
+  Lam Research: 40
+  Micron: 38
+  TSMC: 38
+  SK Hynix: 40
+  Samsung Semiconductor: 44
+  Western Digital: 40
+  Seagate: 38
+  KLA: 42
+  Lam Research: 40
+  Arm: 48
+  Cadence: 46
+  Synopsys: 46
+  Astera Labs: 55
+  Ambarella: 48
+  Microchip: 35
+  NXP: 40
+  Silicon Labs: 40
+  Netflix: 60
+  OpenAI: 65
+  Anthropic: 65
+  Snowflake: 58
+  Figma: 58
+  Cloudflare: 52
+  Palantir: 55
+  Coinbase: 55
+  Uber: 52
+  Lyft: 50
+  Airbnb: 55
+  Salesforce: 48
+  Adobe: 48
+  Cisco: 45
+  Oracle: 42
+  Blue Origin: 40
+  Waymo: 55
+  Zoox: 50
+  Rivian: 42
+  Lucid Motors: 40
+  Applied Intuition: 55
+  Garmin: 32
+  Keysight: 38
+  Dell: 35
+  HP: 35
+  Juniper Networks: 45
+  Arista Networks: 50
+  Jane Street: 130
+  Hudson River Trading: 120
+  Citadel: 120
+  Citadel Securities: 120
+  Jump Trading: 110
+  Two Sigma: 100
+  DE Shaw: 110
+  Optiver: 100
+  IMC Trading: 95
+  Akuna Capital: 85
+  Susquehanna: 95
+  SIG: 95
+  DRW: 100
+  Northrop Grumman: 32
+  Lockheed Martin: 32
+  RTX: 32
+  L3Harris: 32
+  Boeing: 32
+  Honeywell: 32
+  SpaceX: 32          # note: SpaceX pays notably under market for interns
+
+# -----------------------------------------------------------------------------
+# COMPANIES
+# tier1 = at or above your current bar. tier2 = strong, slight score penalty.
+# Anything not listed is dropped outright. This is what kills the Poland spam.
+# -----------------------------------------------------------------------------
+companies:
+  # tier1 = name-brand, at or near your bar. Grouped by sector for readability;
+  # the grouping is cosmetic, the script just reads the flat list.
+  tier1:
+    # --- Big tech ---
+    - Apple
+    - NVIDIA
+    - Google
+    - Microsoft
+    - Meta
+    - Amazon
+    - Netflix
+    - Tesla
+    - Salesforce
+    - Adobe
+    - Oracle
+    - Cisco
+    - Uber
+    - Lyft
+    - Airbnb
+    - Snap
+    - Pinterest
+    - Roblox
+    - Coinbase
+    - Palantir
+    - Dropbox
+    - Twilio
+    - Cloudflare
+    - Datadog
+    - Snowflake
+    - Databricks
+    - Stripe
+    - Figma
+    - Notion
+    - OpenAI
+    - Anthropic
+    - Scale AI
+
+    # --- Semiconductors and silicon (your actual lane) ---
+    - AMD
+    - Intel
+    - Qualcomm
+    - Broadcom
+    - Marvell
+    - Micron
+    - Texas Instruments
+    - Analog Devices
+    - TSMC
+    - Samsung Semiconductor
+    - SK Hynix
+    - Applied Materials
+    - Lam Research
+    - KLA
+    - ASML
+    - Western Digital
+    - Seagate
+    - Arm
+    - Cadence
+    - Synopsys
+    - Astera Labs
+    - Ambarella
+    - Lattice Semiconductor
+    - Microchip
+    - NXP
+    - Infineon
+    - STMicroelectronics
+    - Renesas
+    - onsemi
+    - Skyworks
+    - Qorvo
+    - MediaTek
+    - Nuvoton
+    - Silicon Labs
+    - Rambus
+    - Credo
+    - SiTime
+
+    # --- Autonomy, EV, aero, defense (embedded-heavy) ---
+    - SpaceX
+    - Anduril
+    - Blue Origin
+    - Waymo
+    - Zoox
+    - Cruise
+    - Rivian
+    - Lucid Motors
+    - Aurora
+    - Nuro
+    - Skydio
+    - Astranis
+    - Relativity Space
+    - Applied Intuition
+    - Joby Aviation
+    - Archer Aviation
+
+    # --- Hardware and consumer devices ---
+    - Garmin
+    - Bose
+    - Sonos
+    - Roku
+    - GoPro
+    - Peloton
+    - iRobot
+    - Keysight
+    - Teradyne
+    - National Instruments
+    - Dell
+    - HP
+    - Hewlett Packard Enterprise
+    - Juniper Networks
+    - Arista Networks
+    - Nokia
+    - Ericsson
+
+    # --- Quant and HFT. Highest-paying SWE internships that exist, routinely
+    #     100+/hr. Extremely competitive and mostly pure software, but you said
+    #     pay matters, and these hire ECE heavily. Delete the group if not interested.
+    - Jane Street
+    - Hudson River Trading
+    - Citadel
+    - Citadel Securities
+    - Jump Trading
+    - Two Sigma
+    - DE Shaw
+    - Optiver
+    - IMC Trading
+    - Akuna Capital
+    - Susquehanna
+    - SIG
+    - Old Mission Capital
+    - Belvedere Trading
+    - DRW
+    - Radix Trading
+
+  # tier2 = solid and worth seeing, but scored one point lower than tier1.
+  tier2:
+    - Honeywell
+    - Collins Aerospace
+    - Northrop Grumman
+    - Lockheed Martin
+    - RTX
+    - Raytheon
+    - L3Harris
+    - Boeing
+    - General Dynamics
+    - BAE Systems
+    - Leidos
+    - MITRE
+    - Johns Hopkins APL
+    - Sandia National Laboratories
+    - Los Alamos National Laboratory
+    - Lawrence Livermore
+    - Emerson
+    - Rockwell Automation
+    - Schneider Electric
+    - Siemens
+    - ABB
+    - Eaton
+    - Caterpillar
+    - John Deere
+    - Ford
+    - GM
+    - Rivian Automotive
+    - Zoom
+    - Block
+    - Square
+    - PayPal
+    - Intuit
+    - Workday
+    - ServiceNow
+    - VMware
+    - Nutanix
+    - Pure Storage
+    - NetApp
+
+  # normalized-name -> canonical, so feeds that spell things differently still match
+  aliases:
+    nvidia corporation: nvidia
+    advanced micro devices: amd
+    meta platforms: meta
+    facebook: meta
+    alphabet: google
+    google llc: google
+    amazon web services: amazon
+    aws: amazon
+    amazoncom services: amazon
+    amazon com: amazon
+    ti: texas instruments
+    adi: analog devices
+    space exploration: spacex
+    space x: spacex
+    arm holdings: arm
+    amat: applied materials
+    taiwan semiconductor manufacturing company: tsmc
+    taiwan semiconductor: tsmc
+    tsmc arizona: tsmc
+    samsung: samsung semiconductor
+    samsung electronics america: samsung semiconductor
+    sk hynix america: sk hynix
+    kla tencor: kla
+    western digital: western digital
+    lam research: lam research
+    hpe: hewlett packard enterprise
+    hp inc: hp
+    de shaw group: de shaw
+    d e shaw: de shaw
+    "d e shaw group": de shaw
+    citadel llc: citadel
+    susquehanna international group: susquehanna
+    sig susquehanna: susquehanna
+    jane street capital: jane street
+    hrt: hudson river trading
+    raytheon rtx: rtx
+    rtx corporation: rtx
+    lucid: lucid motors
+    ni: national instruments
+    nxp semiconductors: nxp
+    stmicro: stmicroelectronics
+    on semiconductor: onsemi
+
+# -----------------------------------------------------------------------------
+# ROLES
+# -----------------------------------------------------------------------------
+roles:
+  # Title MUST contain one of these or it is not an internship.
+  # "university grad" deliberately removed: that means full-time new grad, not an intern.
+  must_any: [intern, internship, "co-op", "coop", "co op", "student worker", "student intern"]
+
+  # UNDERGRAD ONLY. You're class of Dec 2027, so anything grad-gated is noise.
+  undergrad:
+    # Reject on title outright.
+    title_block:
+      - "phd"
+      - "ph.d"
+      - "ph d"
+      - "doctoral"
+      - "postdoc"
+      - "post-doc"
+      - "masters"
+      - "master's"
+      - "ms/phd"
+      - "ms or phd"
+      - "graduate student"
+      - "grad student"
+      - "new grad"
+      - "university graduate"
+      - "recent graduate"
+      - "early career"
+      - "mba"
+      - "research scientist"
+
+    # Reject on description, but ONLY on phrasing that is exclusively grad-gated.
+    # A plain mention of "PhD" is not enough: tons of good postings say
+    # "BS/MS/PhD in EE or CS", which you qualify for.
+    body_block:
+      - "pursuing a phd"
+      - "pursuing a ph.d"
+      - "phd candidate"
+      - "ph.d. candidate"
+      - "phd student"
+      - "ph.d. student"
+      - "phd required"
+      - "phd is required"
+      - "must be pursuing a doctoral"
+      - "enrolled in a phd"
+      - "graduate students only"
+      - "master's degree required"
+      - "masters degree required"
+      - "ms degree required"
+
+    # If any of these also appear, the body_block above is overridden, because the
+    # posting is explicitly open to undergrads.
+    undergrad_signals:
+      - "bachelor"
+      - "b.s."
+      - "bs/ms"
+      - "bs or ms"
+      - "undergraduate"
+      - "rising senior"
+      - "rising junior"
+      - "sophomore"
+
+  # Instant reject on title.
+  block:
+    - senior
+    - staff
+    - principal
+    - manager
+    - director
+    - lead
+    - "phd"
+    - mba
+    - recruiter
+    - sales
+    - marketing
+    - "supply chain"
+    - technician
+    - "service advisor"
+    - "customer"
+    - finance
+    - accounting
+    - legal
+    - "human resources"
+    - "military veteran"     # Amazon posts vet-only mirrors of every SDE intern req
+
+  # Wrong term. Hard reject. Set for Summer 2027 only.
+  # Note this blocks on the SEASON being wrong, not on 2027 being absent, because
+  # plenty of good reqs are titled plainly with the season only in the body.
+  block_terms:
+    - "summer 2026"
+    - "fall 2026"
+    - "winter 2026"
+    - "spring 2026"
+    - "spring 2027"    # you're back at UT
+    - "fall 2027"      # you graduate in December
+    - "winter 2027"
+
+  # Right term. Boosts score, does not hard-filter, because plenty of great
+  # postings just say "Software Engineer Intern" with no season in the title.
+  term_boost: ["summer 2027", "2027"]
+
+  embedded:
+    - embedded
+    - firmware
+    - "bare metal"
+    - rtos
+    - freertos
+    - microcontroller
+    - "device driver"
+    - "board support"
+    - bsp
+    - "low level"
+    - "low-level"
+    - "systems software"
+    - kernel
+    - "linux driver"
+    - "can bus"
+    - autosar
+    - "real-time"
+    - bootloader
+    - soc software
+    - "silicon software"
+
+  swe:
+    - "software engineer"
+    - "software engineering"
+    - "software development"
+    - "swe"
+    - "sde"
+    - backend
+    - "back-end"
+    - "full stack"
+    - "platform engineer"
+    - "infrastructure engineer"
+    - "tools engineer"
+    - "test engineer"
+    - automation
+    - python
+    - "c++"
+
+  hardware:
+    - hardware
+    - asic
+    - fpga
+    - rtl
+    - "design verification"
+    - "signal integrity"
+    - "board design"
+    - "pcb"
+    - "analog design"
+    - "physical design"
+    - "power electronics"
+    - "hardware engineer"
+    - "electrical engineer"
+
+# -----------------------------------------------------------------------------
+# LOCATIONS
+# This is the other half of the Poland fix.
+# -----------------------------------------------------------------------------
+locations:
+  allow_unknown: true      # some feeds omit location; better to see it than miss it
+
+  tier1:                   # places you actually want to spend a summer
+    - santa clara
+    - san jose
+    - sunnyvale
+    - mountain view
+    - palo alto
+    - cupertino
+    - menlo park
+    - fremont
+    - san francisco
+    - "bay area"
+    - redwood city
+    - san mateo
+    - milpitas
+    - austin
+    - seattle
+    - bellevue
+    - redmond
+    - san diego
+    - los angeles
+    - santa monica
+    - "el segundo"
+    - irvine
+    - hawthorne
+    - boulder
+    - denver
+    - "new york"
+    - boston
+    - cambridge
+
+  tier2:
+    - boise            # Micron HQ
+    - "fort collins"   # Broadcom, AMD
+    - longmont
+    - folsom           # Intel, Micron
+    - sherman          # TI's new fab
+    - allen
+    - tucson
+    - "san antonio"
+    - "california"
+    - "texas"
+    - "washington"
+    - dallas
+    - houston
+    - plano
+    - richardson
+    - phoenix
+    - chandler
+    - tempe
+    - portland
+    - hillsboro
+    - raleigh
+    - durham
+    - atlanta
+    - chicago
+    - "colorado"
+    - "oregon"
+    - "arizona"
+
+  remote_ok_terms: ["remote", "united states - remote"]
+
+  # Anything containing these is dropped. This is your Poland killer.
+  block:
+    - poland
+    - krakow
+    - warsaw
+    - wroclaw
+    - gdansk
+    - india
+    - bangalore
+    - bengaluru
+    - hyderabad
+    - pune
+    - noida
+    - chennai
+    - china
+    - shanghai
+    - beijing
+    - shenzhen
+    - taiwan
+    - taipei
+    - hsinchu
+    - japan
+    - tokyo
+    - korea
+    - seoul
+    - singapore
+    - malaysia
+    - penang
+    - vietnam
+    - philippines
+    - israel
+    - "tel aviv"
+    - haifa
+    - germany
+    - munich
+    - berlin
+    - ireland
+    - dublin
+    - "united kingdom"
+    - london
+    - cambridge, uk
+    - france
+    - paris
+    - spain
+    - barcelona
+    - madrid
+    - netherlands
+    - amsterdam
+    - eindhoven
+    - sweden
+    - stockholm
+    - denmark
+    - norway
+    - finland
+    - romania
+    - bucharest
+    - hungary
+    - budapest
+    - czech
+    - prague
+    - brazil
+    - "sao paulo"
+    - mexico
+    - guadalajara
+    - canada
+    - toronto
+    - vancouver
+    - ottawa
+    - montreal
+    - waterloo
+    - australia
+    - sydney
+    - egypt
+    - cairo
+    - turkey
+    - istanbul
+    - "costa rica"
+    - "san jose, costa rica"
+
+# -----------------------------------------------------------------------------
+# SOURCES
+# Run `python internwatch.py --check-sources` after any edit here.
+# -----------------------------------------------------------------------------
+sources:
+  query: "intern"
+
+  # A NOTE ON COVERAGE: microsoft, google, meta, apple, and amazon below hit
+  # each company's own search endpoint directly. Some of these companies run
+  # active bot-detection (Cloudflare/Akamai-style fingerprinting) that blocks
+  # or intermittently blocks plain server-to-server requests like this script's.
+  # When one goes quiet, it is usually that, not a config problem, and it is
+  # not something worth chasing with fingerprint-spoofing or proxies.
+  # simplify_urls below is the real backbone: a community-maintained feed that
+  # already includes MSFT/Google/Meta/AMD/Amazon postings independent of
+  # whether their direct endpoint responds this run. Direct sources add a bit
+  # of speed and redundancy on top; they are not the thing coverage depends on.
+
+  # Community-maintained feed. Fastest single signal that exists for internships.
+  # Repo name rolls over each cycle; first URL that responds wins.
+  simplify_urls:
+    - https://raw.githubusercontent.com/SimplifyJobs/Summer2027-Internships/dev/.github/scripts/listings.json
+    - https://raw.githubusercontent.com/vanshb03/Summer2027-Internships/dev/.github/scripts/listings.json
+    - https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/.github/scripts/listings.json
+    - https://raw.githubusercontent.com/vanshb03/Summer2026-Internships/dev/.github/scripts/listings.json
+
+  # Workday CXS API. host / tenant / site come straight out of the careers URL:
+  #   https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite
+  #          ^host                        ^tenant is the subdomain   ^site
+  workday:
+    NVIDIA:
+      host: nvidia.wd5.myworkdayjobs.com
+      tenant: nvidia
+      site: NVIDIAExternalCareerSite
+    # AMD is intentionally absent here: they run on iCIMS, not Workday, and
+    # iCIMS has no public JSON feed (only rendered HTML). AMD roles still reach
+    # you through the simplify-feed source below, which already covers them.
+    Qualcomm:
+      host: qualcomm.wd12.myworkdayjobs.com   # was wd5, they migrated tenants
+      tenant: qualcomm
+      site: External
+    Micron:
+      host: micron.wd1.myworkdayjobs.com
+      tenant: micron
+      site: External
+    Intel:
+      host: intel.wd1.myworkdayjobs.com
+      tenant: intel
+      site: External
+    Marvell:
+      host: marvell.wd1.myworkdayjobs.com
+      tenant: marvell
+      site: MarvellCareers
+    Analog Devices:
+      host: analogdevices.wd1.myworkdayjobs.com
+      tenant: analogdevices
+      site: External
+    Applied Materials:
+      host: amat.wd1.myworkdayjobs.com
+      tenant: amat
+      site: External
+
+  # Greenhouse boards. Token is the slug in job-boards.greenhouse.io/<token>
+  greenhouse:
+    Anduril: andurilindustries
+    Databricks: databricks
+    Stripe: stripe
+    Zoox: zoox
+    Waymo: waymo
+    Skydio: skydio
+    Astranis: astranis
+
+  # Lever boards. Token is the slug in jobs.lever.co/<token>
+  lever: {}
